@@ -40,10 +40,14 @@ class FramePool {
 
 private:
      /* -- DEFINE YOUR FRAME POOL DATA STRUCTURE(s) HERE. */
-	bool pool[1024];
-  	unsigned long base_frame_no;
-	unsigned long nframes;
-	unsigned long info_frame_no;
+
+// bit map for 32 MB is 8k
+
+	static bool pool[8096];
+  	static unsigned long base_frame_no;
+	static unsigned long nframes;
+	static unsigned long info_frame_no;
+
 public:
   
    FramePool(unsigned long _base_frame_no,

@@ -48,6 +48,7 @@
 #include "simple_timer.H" /* TIMER MANAGEMENT */
 
 #include "page_table.H"
+#include "frame_pool.H"
 #include "paging_low.H"
 
 /*--------------------------------------------------------------------------*/

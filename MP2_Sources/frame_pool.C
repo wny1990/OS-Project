@@ -15,15 +15,16 @@
 /* INCLUDES */
 /*--------------------------------------------------------------------------*/
 #include "frame_pool.H"
+bool FramePool::pool[8096];
+unsigned long FramePool::base_frame_no;
+unsigned long FramePool::nframes;
+unsigned long FramePool::info_frame_no;
+
 
 /*--------------------------------------------------------------------------*/
 /* F r a m e   P o o l  */
 /*--------------------------------------------------------------------------*/
-
-	FramePool::FramePool(unsigned long _base_frame_no,
-             unsigned long _nframes,
-             unsigned long _info_frame_no)
-   /* Initializes the data structures needed for the management of this
+  /* Initializes the data structures needed for the management of this
       frame pool. This function must be called before the paging system
       is initialized.
       _base_frame_no is the frame number at the start of the physical memory
@@ -37,42 +38,48 @@
       frame pool. However, if _info_frame_no is 0, the frame pool is free to
       choose any frame from the pool to store management information.
       */
+	FramePool::FramePool(unsigned long _base_frame_no,
+             unsigned long _nframes,
+             unsigned long _info_frame_no)
+ 
 	{
-	//	pool = bool[_nframes - _info_frame_no];
 		base_frame_no = _base_frame_no;
 		nframes = _nframes;
 		info_frame_no = _info_frame_no;
 		return;
 	}
 	
-	unsigned long FramePool::get_frame()
    /* Allocates a frame from the frame pool. If successful, returns the frame
     * number of the frame. If fails, returns 0. */
+	unsigned long FramePool::get_frame()
 	{
 		for( int i = 0; i < nframes - info_frame_no; i++)
 			if (pool[i] == false)
+			{
+				pool[i] = true;
 				return base_frame_no + i;
+			}
 		return 0;
 	}
 	
-	void FramePool::mark_inaccessible(unsigned long _base_frame_no,
-                          unsigned long _nframes)
    /* Mark the area of physical memory as inaccessible. The arguments have the
     * same semanticas as in the constructor.
     */
+	void FramePool::mark_inaccessible(unsigned long _base_frame_no,
+                          unsigned long _nframes)
 	{
 		for( int i = _base_frame_no - base_frame_no; i < _base_frame_no - base_frame_no + _nframes; i++)
 			pool[i] = true;
 		return;
 	}
 
-	void FramePool::release_frame(unsigned long _frame_no)
    /* Releases frame back to the given frame pool.
       The frame is identified by the frame number. 
       NOTE: This function is static because there may be more than one frame pool
       defined in the system, and it is unclear which one this frame belongs to.
       This function must first identify the correct frame pool and then call the frame
       pool's release_frame function. */
+	void FramePool::release_frame(unsigned long _frame_no)
 	{
 		pool[_frame_no - base_frame_no] = false;
 		return;

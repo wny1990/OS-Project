@@ -38,10 +38,9 @@
 /* P A G E - T A B L E  */
 /*--------------------------------------------------------------------------*/
 
-class PageTable {
-
+class PageTable 
+{
 private:
-
   /* THESE MEMBERS ARE COMMON TO ENTIRE PAGING SUBSYSTEM */
   static PageTable     * current_page_table; /* pointer to currently loaded page table object */
   static unsigned int    paging_enabled;     /* is paging turned on (i.e. are addresses logical)? */
@@ -52,12 +51,11 @@ private:
   /* DATA FOR CURRENT PAGE TABLE */
   unsigned long        * page_directory;     /* where is page directory located? */
   /* THE ARRAY OF PAGE TABLE */
-  unsigned long        * page_table;
 
-public:
   static const unsigned int PAGE_SIZE        = Machine::PAGE_SIZE; /* in bytes */
   static const unsigned int ENTRIES_PER_PAGE = Machine::PT_ENTRIES_PER_PAGE; /* in entries, duh! */
 
+public:
   static void init_paging(FramePool * _kernel_mem_pool,
                           FramePool * _process_mem_pool,
                           const unsigned long _shared_size);
