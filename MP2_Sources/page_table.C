@@ -49,8 +49,7 @@ PageTable::PageTable()
 	for(int i = 0; i < shared_size / PAGE_SIZE; i++)
 	{
 		page_table[i] = address | 3; 
-		//address += PAGE_SIZE;
-		address += 4096;
+		address += PAGE_SIZE;
 	}
 	// attribute set to: supervisor level, read/write, present(011 in binary)
 	for(int i = 0; i < shared_size / (PAGE_SIZE * ENTRIES_PER_PAGE); i++)
@@ -61,9 +60,7 @@ PageTable::PageTable()
 	// attribute set to: supervisor level, read/write, not present(010 in binary)
 	for(int i =  shared_size / (PAGE_SIZE * ENTRIES_PER_PAGE) + 1; i < ENTRIES_PER_PAGE; i++)
 		page_directory[i] = 0 | 2; 
-
 	return;
-
 }
 	/* Makes the given page table the current table. This must be done once during
 	system startup and whenever the address space is switched (e.g. during

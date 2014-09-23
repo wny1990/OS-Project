@@ -68,7 +68,9 @@ unsigned long FramePool::get_frame()
 			if (offset == 8 )
 				return 0;
 			used[i] = used[i] | ( 0x1 << offset);
-			Console::puts("\nget frame:\n");
+			if ( (i << 3) + offset > nframes - 1)
+				return 0;
+			Console::puts("\nget frame: ");
 			Console::putui(base_frame_no + (i << 3 )+ offset);
 			Console::puts("\n");
 			mark_inaccessible_frame( i << 3 + offset);
@@ -88,13 +90,11 @@ void FramePool::mark_inaccessible(unsigned long _base_frame_no,unsigned long _nf
 		mark_inaccessible_frame(i);
 	return;
 }
-void FramePool::mark_inaccessible_frame(unsigned long frame_index)
+void inline FramePool::mark_inaccessible_frame(unsigned long frame_index)
 {
 	unsigned long start = frame_index >> 3;
 	int offset_index = frame_index & 0x7;
-	char mask = 1;
-	for ( int i = 0; i < offset_index; i++)
-		mask = mask << 1;
+	char mask = 1 << offset_index;
 	used[start] = used[start] | mask;
 	return;
 }
@@ -120,9 +120,7 @@ void FramePool::release_frame(unsigned long _frame_no)
 		index = _frame_no - 1024;
 	}
 	int offset_index = index  & 0x7;
-	char mask = 1;
-	for ( int i = 1; i <= offset_index; i++)
-		mask = mask << 1;
+	char mask = 1 << offset_index;
 	mask = ~mask;
 	map[index >> 3] = map[index >> 3] & mask;
 	return;
