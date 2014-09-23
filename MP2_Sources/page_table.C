@@ -22,11 +22,7 @@
   FramePool     *PageTable::process_mem_pool;   /* Frame pool for the process memory */
   unsigned long   PageTable::shared_size;        /* size of shared address space */
 
-  /* DATA FOR CURRENT PAGE TABLE */
-  unsigned long        * page_directory;     /* where is page directory located? */
-  unsigned long        * page_table;     /* where is page directory located? */
- 
-	/* Set the global parameters for the paging subsystem. */
+/* Set the global parameters for the paging subsystem. */
 void PageTable::init_paging(FramePool * _kernel_mem_pool,FramePool * _process_mem_pool,const unsigned long _shared_size)
 {
 	paging_enabled = 0;
@@ -110,10 +106,8 @@ void PageTable::handle_fault(REGS * _r)
 	}
 	else
 		Console::puts("Page not Present\n");
- 	unsigned long address;
- 	unsigned long frame;
+ 	unsigned long address = read_cr2();
  	unsigned long *PT;
-	address = read_cr2();
 	//page table not present
 	if( ((current_page_table->page_directory[address>>22]) & 0x1 ) == 0 )
 	{
@@ -125,10 +119,10 @@ void PageTable::handle_fault(REGS * _r)
 	else
 		PT = (unsigned long *)(current_page_table->page_directory[address>>22]&0xFFFFF000);
 	
-	frame = process_mem_pool->get_frame();
+ 	unsigned long frame = process_mem_pool->get_frame();
 	if( frame == 0 )
 	{
-		Console::puts("No enough memory.");
+		Console::puts("Run out of Memory.");
 		return;
 	}
 

@@ -50,6 +50,7 @@ private:
 
   /* DATA FOR CURRENT PAGE TABLE */
   unsigned long        * page_directory;     /* where is page directory located? */
+  unsigned long        * page_table;     /* where is page directory located? */
   /* THE ARRAY OF PAGE TABLE */
 
   static const unsigned int PAGE_SIZE        = Machine::PAGE_SIZE; /* in bytes */

@@ -24,8 +24,7 @@
 /* INCLUDES */
 /*--------------------------------------------------------------------------*/
 
-/* -- (none) -- */
-
+#include "console.H"
 /*--------------------------------------------------------------------------*/
 /* DATA STRUCTURES */
 /*--------------------------------------------------------------------------*/
@@ -43,14 +42,16 @@ private:
 
 // bit map for 32 MB is 8k
 
-	static bool pool[8096];
-  	static unsigned long base_frame_no;
-	static unsigned long nframes;
-	static unsigned long info_frame_no;
-
+	char* used;
+  	unsigned long base_frame_no;
+	unsigned long nframes;
+	unsigned long info_frame_no;
+	//int pool_count;
+	//static unsigned long * bases;
+	//static unsigned long * length;
 public:
   
-   FramePool(unsigned long _base_frame_no,
+	FramePool(unsigned long _base_frame_no,
              unsigned long _nframes,
              unsigned long _info_frame_no);
    /* Initializes the data structures needed for the management of this
@@ -68,17 +69,18 @@ public:
       choose any frame from the pool to store management information.
       */
 
-   unsigned long get_frame();
+	unsigned long get_frame();
    /* Allocates a frame from the frame pool. If successful, returns the frame
     * number of the frame. If fails, returns 0. */
 
-   void mark_inaccessible(unsigned long _base_frame_no,
+	void mark_inaccessible_frame(unsigned long frame_index);
+	void mark_inaccessible(unsigned long _base_frame_no,
                           unsigned long _nframes);
    /* Mark the area of physical memory as inaccessible. The arguments have the
     * same semanticas as in the constructor.
     */
 
-   static void release_frame(unsigned long _frame_no);
+	static void release_frame(unsigned long _frame_no);
    /* Releases frame back to the given frame pool.
       The frame is identified by the frame number. 
       NOTE: This function is static because there may be more than one frame pool
