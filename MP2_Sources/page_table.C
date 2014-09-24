@@ -22,7 +22,7 @@
   FramePool     *PageTable::process_mem_pool;   /* Frame pool for the process memory */
   unsigned long   PageTable::shared_size;        /* size of shared address space */
 
-/* Set the global parameters for the paging subsystem. */
+	/* Set the global parameters for the paging subsystem. */
 void PageTable::init_paging(FramePool * _kernel_mem_pool,FramePool * _process_mem_pool,const unsigned long _shared_size)
 {
 	paging_enabled = 0;
@@ -41,26 +41,28 @@ void PageTable::init_paging(FramePool * _kernel_mem_pool,FramePool * _process_me
 PageTable::PageTable()
 {
 	// 12 means 2^12 = 4096
-	page_directory = (unsigned long *)(kernel_mem_pool->get_frame()<<12);
-	page_table = (unsigned long *)(kernel_mem_pool->get_frame()<<12);
+	page_directory = (unsigned long *)(kernel_mem_pool->get_frame() << 12);
+	page_table = (unsigned long *)(kernel_mem_pool->get_frame() << 12);
 
 	unsigned long address = 0;
 	// attribute set to: supervisor level, read/write, present(011 in binary)
-	for(int i = 0; i < shared_size / PAGE_SIZE; i++)
+	for(unsigned int i = 0; i < shared_size / PAGE_SIZE; i++)
 	{
 		page_table[i] = address | 3; 
 		address += PAGE_SIZE;
 	}
 	// attribute set to: supervisor level, read/write, present(011 in binary)
-	for(int i = 0; i < shared_size / (PAGE_SIZE * ENTRIES_PER_PAGE); i++)
+	for(unsigned int i = 0; i < shared_size / (PAGE_SIZE * ENTRIES_PER_PAGE); i++)
 	{
 		page_directory[i] = (long unsigned int) (page_table + PAGE_SIZE * i);
 		page_directory[i] = page_directory[i] | 3; 
 	}
 	// attribute set to: supervisor level, read/write, not present(010 in binary)
-	for(int i =  shared_size / (PAGE_SIZE * ENTRIES_PER_PAGE) + 1; i < ENTRIES_PER_PAGE; i++)
+	for(unsigned int i =  shared_size / (PAGE_SIZE * ENTRIES_PER_PAGE) + 1; i < ENTRIES_PER_PAGE; i++)
 		page_directory[i] = 0 | 2; 
+
 	return;
+
 }
 	/* Makes the given page table the current table. This must be done once during
 	system startup and whenever the address space is switched (e.g. during
@@ -69,7 +71,7 @@ PageTable::PageTable()
 void PageTable::load()
 {
 	write_cr3((unsigned long int )page_directory);
-	current_page_table =   this;
+	current_page_table = this;
 	return;
 }
 
@@ -82,9 +84,8 @@ void PageTable::enable_paging()
 
 	unsigned long cr_0 = read_cr0();
 	cr_0 = cr_0 | 0x80000000;
-	write_cr0(cr_0);
  	paging_enabled = 1; 
-
+	write_cr0(cr_0);
 	return;
 }
 
@@ -105,14 +106,16 @@ void PageTable::handle_fault(REGS * _r)
 		Console::puts("Page not Present\n");
  	unsigned long address = read_cr2();
  	unsigned long *PT;
-	//page table not present
-	if( ((current_page_table->page_directory[address>>22]) & 0x1 ) == 0 )
+	//page table not present in page directory
+	if( ((current_page_table->page_directory[ address >> 22]) & 0x1 ) == 0 )
 	{
+		//allocate frame for page table
 		PT = (unsigned long *)(kernel_mem_pool->get_frame()<<12);
-		for(int  i = 0; i < ENTRIES_PER_PAGE; i++ )
+		for(unsigned int  i = 0; i < ENTRIES_PER_PAGE; i++ )
 			PT[i] = 2;
 		current_page_table->page_directory[address>>22] = (unsigned long)PT | 3;
 	}
+	//page table presented in page directory
 	else
 		PT = (unsigned long *)(current_page_table->page_directory[address>>22]&0xFFFFF000);
 	
@@ -122,7 +125,6 @@ void PageTable::handle_fault(REGS * _r)
 		Console::puts("Run out of Memory.");
 		return;
 	}
-
-	PT[ (address>>12) & 0x3FF ] = (frame << 12) | 3;
+	PT[ (address>>12) & 0x3ff ] = (frame << 12) | 3;
 	return;
 }

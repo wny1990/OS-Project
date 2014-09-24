@@ -73,7 +73,7 @@ unsigned long FramePool::get_frame()
 			Console::puts("\nget frame: ");
 			Console::putui(base_frame_no + (i << 3 )+ offset);
 			Console::puts("\n");
-			mark_inaccessible_frame( i << 3 + offset);
+			mark_inaccessible_frame( (i << 3) + offset);
 			return base_frame_no + (i << 3) + offset;
 		}
 	return 0;
