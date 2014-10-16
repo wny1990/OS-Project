@@ -42,14 +42,17 @@ FramePool::FramePool(unsigned long _base_frame_no,unsigned long _nframes,unsigne
 	if (info_frame_no == 0)
 		info_frame_no = 512;
 	used = (char*)(info_frame_no << 12);
+	// set all the bit free
 	for( unsigned long i = 0; i < ( (nframes - 1)>> 3) ; i++)
 		used[i] = 0;
+	// set part of the bit free in the last byte.
 	int offset = nframes & 0x0007;
 	char mask = 0;
 	for ( int i = 0; i < offset; i++)
 		mask = (mask << 1) | 0x1;
 	mask = ~mask;
 	used[ (nframes - 1)>> 3] = used[ (nframes -1 ) >> 3] & mask;
+        // set the info frame allocated.
 	mark_inaccessible(info_frame_no,1);
 	return;
 }
@@ -60,18 +63,22 @@ FramePool::FramePool(unsigned long _base_frame_no,unsigned long _nframes,unsigne
 unsigned long FramePool::get_frame()
 {
 	for( unsigned int i = 0; i <= (nframes >> 3) ; i++)
+// if there is free frame in this byte
 		if (~used[i] != 0)
 		{
+                 //find the offset
 			int offset;
 			for( offset = 0; offset < 8; offset++)
 				if ((  (~used[i]) & (0x1 << offset)) != 0 )
 					break;
 			if (offset == 8 )
 				return 0;
+                // set the bit allocated
 			used[i] = used[i] | ( 0x1 << offset);
 			if ( (i << 3) + offset > nframes - 1)
 				return 0;
-			Console::puts("\nget frame: ");
+		  //output frame number on the screen
+                  	Console::puts("\nget frame: ");
 			Console::putui(base_frame_no + (i << 3 )+ offset);
 			Console::puts("\n");
 			mark_inaccessible_frame( (i << 3) + offset);
@@ -87,10 +94,12 @@ unsigned long FramePool::get_frame()
 
 void FramePool::mark_inaccessible(unsigned long _base_frame_no,unsigned long _nframes)
 {
+//mark a region inaccessible
 	for( unsigned long i = base_frame_no - _base_frame_no; i <  base_frame_no - _base_frame_no + _nframes; i++)
 		mark_inaccessible_frame(i);
 	return;
 }
+//mark a frame inaccessible
 void inline FramePool::mark_inaccessible_frame(unsigned long frame_index)
 {
 	unsigned long start = frame_index >> 3;
@@ -110,6 +119,7 @@ void FramePool::release_frame(unsigned long _frame_no)
 {
 	char* map;
 	int index;
+   //determine which frame pool the frame is in.
 	if ( _frame_no < 1024 )
 	{
 		map = (char *)(512 << 12);
@@ -120,6 +130,7 @@ void FramePool::release_frame(unsigned long _frame_no)
 		map = (char *)(1024 << 12);
 		index = _frame_no - 1024;
 	}
+   // set the frame bit free
 	int offset_index = index  & 0x7;
 	char mask = 1 << offset_index;
 	mask = ~mask;

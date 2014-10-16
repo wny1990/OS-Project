@@ -116,11 +116,16 @@ void FramePool::release_frame(unsigned long _frame_no)
 	}
 	else
 	{
-		map = (char *)(1024 << 12);
+		map = (char *)(513 << 12);
 		index = _frame_no - 1024;
 	}
 	int offset_index = index  & 0x7;
 	char mask = 1 << offset_index;
+	if (! (map[index >> 3] & mask ))
+	{
+		Console::puts("frame already free.");
+		abort();
+	}
 	mask = ~mask;
 	map[index >> 3] = map[index >> 3] & mask;
 	return;

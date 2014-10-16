@@ -28,6 +28,7 @@
 #include "vm_pool.H"
 #include "paging_low.H"
 #include "console.H"
+#include "utils.H"
 
 /*--------------------------------------------------------------------------*/
 /* FORWARDS */
@@ -41,7 +42,8 @@
 
 class PageTable 
 {
-private:
+public:
+//private:
   /* THESE MEMBERS ARE COMMON TO ENTIRE PAGING SUBSYSTEM */
   static PageTable     * current_page_table; /* pointer to currently loaded page table object */
   static unsigned int    paging_enabled;     /* is paging turned on (i.e. are addresses logical)? */
@@ -52,6 +54,8 @@ private:
   /* DATA FOR CURRENT PAGE TABLE */
   unsigned long        * page_directory;     /* where is page directory located? */
   unsigned long        * page_table;     /* where is page directory located? */
+  VMPool        * vm_pool[8];     /* where is associated vmpool ocated? */
+  int c_vm;
   /* THE ARRAY OF PAGE TABLE */
 
   static const unsigned int PAGE_SIZE        = Machine::PAGE_SIZE; /* in bytes */
@@ -82,9 +86,11 @@ public:
      memory is accessed by addressing physical memory directly. After paging is
      enabled, memory is addressed logically. */
 
-  static void handle_fault(REGS * _r);
   /* The page fault handler. */
+  static void handle_fault(REGS * _r);
+
   void _register(VMPool* _pool);
+
   void free_page(unsigned long _page_no);
 };
 

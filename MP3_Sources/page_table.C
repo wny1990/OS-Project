@@ -54,13 +54,14 @@ PageTable::PageTable()
 	// attribute set to: supervisor level, read/write, present(011 in binary)
 	for(unsigned int i = 0; i < shared_size / (PAGE_SIZE * ENTRIES_PER_PAGE); i++)
 	{
-		page_directory[i] = (long unsigned int) (page_table + PAGE_SIZE * i);
+		page_directory[i] = (unsigned long) (page_table + PAGE_SIZE * i);
 		page_directory[i] = page_directory[i] | 3; 
 	}
 	// attribute set to: supervisor level, read/write, not present(010 in binary)
 	for(unsigned int i =  shared_size / (PAGE_SIZE * ENTRIES_PER_PAGE) + 1; i < ENTRIES_PER_PAGE; i++)
 		page_directory[i] = 0 | 2; 
 
+	c_vm = 0;
 	return;
 
 }
@@ -100,16 +101,28 @@ void PageTable::handle_fault(REGS * _r)
 	if (_r->err_code & 1)
 	{
 		Console::puts("Protection Fault\n");
+		abort();
 		return;
 	}
 	else
 		Console::puts("Page not Present\n");
  	unsigned long address = read_cr2();
  	unsigned long *PT;
-//	check if the logical address legitimate
-	if (!is_legitimate(address))
-		int abort = 10/0;
 
+//	check if the logical address legitimate
+	bool found = false;
+// check every virtual memory pool for that
+	for ( int i = 0; i < current_page_table->c_vm; i++)
+		if (current_page_table->vm_pool[i]->is_legitimate(address))
+			found = true;		
+	if ( found == false)
+	{
+		Console::puts("Memory Reference Invalid.\n");
+		Console::putui(address);
+		Console::puts("\n.");
+		abort();
+		return;
+	}
 	//page table not present in page directory
 	if( ((current_page_table->page_directory[ address >> 22]) & 0x1 ) == 0 )
 	{
@@ -127,24 +140,37 @@ void PageTable::handle_fault(REGS * _r)
 	if( frame == 0 )
 	{
 		Console::puts("Run out of Memory.");
-		return;
+		abort();
 	}
 	PT[ (address>>12) & 0x3ff ] = (frame << 12) | 3;
 	return;
 }
-
+// register a virtual memory pool for this page table ( address space)
 void PageTable::_register(VMPool* _pool)
 {
+	vm_pool[c_vm] = _pool;
+	c_vm++;
 	return;
 }
 
 void  PageTable::free_page(unsigned long _page_no)
 {
-	unsigned long address = current_page_table->page_table[_page_no];
+	unsigned long page_dir_index = _page_no >> 10;
+	unsigned long page_tb_index = _page_no & 0x3ff;
+	unsigned long* table = (unsigned long *)(page_directory[page_dir_index] & 0xfffff000);
+	unsigned long address = table[page_tb_index];
+
 	unsigned long frame_no = address >> 12;
-	FramePool::release_frame(frame_no);
+
 	// clear the present bit
-	current_page_table->page_table[_page_no] = current_page_table->page_table[_page_no] & ( ~(0x1));
+	if ( address & 0x1)
+	{
+		Console::puts("\n release frame : ");
+		Console::putui(frame_no);
+		Console::puts("\n");
+		FramePool::release_frame(frame_no);
+	}
+	table[page_tb_index] = table[page_tb_index] & ( ~(0x1));
 	return;
 }
 
