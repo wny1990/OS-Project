@@ -33,10 +33,6 @@ VMPool::VMPool(unsigned long _base_address,
         page_table =_page_table;
 	_page_table->_register(this);
 	regions = (unsigned long *) ((_page_table->kernel_mem_pool->get_frame() ) << 12);
-//	regions = (unsigned long *)(_base_address);
-//	regions[0] = _base_address;
-//	regions[1] = 4 * (1 << 12);
-//	c_regions = 1;
 	c_regions = 0;
 	return;
 }   
@@ -47,16 +43,37 @@ unsigned long VMPool::allocate(unsigned long _size)
 {
 	unsigned long max = base_address;
 	unsigned long m_size = 0;
-	for ( int index = 0;  index < 2 * c_regions ; index = index + 2)
-		if (regions[index] > max)
+	unsigned long start = base_address;
+	bool found_inner = false;
+	// extend size to page size
+	_size = (_size & ~(0xfff) ) + 4096;
+	for ( int index = 2;  index < 2 * c_regions ; index = index + 2)
+	{
+		if (  regions[index] - ( regions[index-2] + regions[index-1]) >= _size )
 		{
-			max = regions[index];
-			m_size = regions[index + 1];
+			start = regions[index-2] + regions[index-1];
+			found_inner = true;
+			break;
 		}
-	regions[c_regions * 2] = max + m_size;
-	regions[c_regions * 2 + 1] = _size;
+
+	}
+	if ( found_inner == false)
+	{
+		for ( int index = 0;  index < 2 * c_regions ; index = index + 2)
+			if (regions[index] > max)
+			{
+				max = regions[index];
+				m_size = regions[index + 1];
+			}
+
+	// we found no inner interval can allocated for this section
+		regions[c_regions * 2] = max + m_size;
+		regions[c_regions * 2 + 1] = _size;
+		start = max + m_size;
+	}
+	
 	Console::puts("\nallocate address start from: ");
-	Console::putui(max + m_size);
+	Console::putui(start);
 	Console::puts("\n");
 	c_regions++;
 	return max + m_size;
@@ -96,6 +113,9 @@ BOOLEAN VMPool::is_legitimate(unsigned long _address)
    /* Returns FALSE if the address is not valid. An address is not valid
     * if it is not part of a region that is currently allocated. */
 {
+	//if this is a recursive pointer, set the reference valid
+	if( _address >> 22 == 1023 || ((_address >> 12 ) & 0x3ff ) == 1023 )
+		return true;
 	for ( int i = 0;  i < 2 * c_regions ; i = i + 2)
 	{
 		if( _address >= regions[i] && _address < regions[i] + regions[i+1])

@@ -202,7 +202,6 @@ void GenerateMemoryReferences(VMPool *pool, int size1, int size2)
 {
    current_pool = pool;
    for(int i=1; i<size1; i++) {
-     Console::puts("\nnew iteration.\n");
       int *arr = new int[size2 * i];
       if(pool->is_legitimate((unsigned long)arr) == FALSE) {
          TestFailed();

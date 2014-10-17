@@ -51,6 +51,7 @@ PageTable::PageTable()
 		page_table[i] = address | 3; 
 		address += PAGE_SIZE;
 	}
+	page_table[1023] = (unsigned long ) page_table | 3;
 	// attribute set to: supervisor level, read/write, present(011 in binary)
 	for(unsigned int i = 0; i < shared_size / (PAGE_SIZE * ENTRIES_PER_PAGE); i++)
 	{
@@ -61,6 +62,7 @@ PageTable::PageTable()
 	for(unsigned int i =  shared_size / (PAGE_SIZE * ENTRIES_PER_PAGE) + 1; i < ENTRIES_PER_PAGE; i++)
 		page_directory[i] = 0 | 2; 
 
+	page_directory[1023] = ( unsigned long) page_directory | 3;
 	c_vm = 0;
 	return;
 
@@ -102,14 +104,14 @@ void PageTable::handle_fault(REGS * _r)
 	{
 		Console::puts("Protection Fault\n");
 		abort();
-		return;
 	}
 	else
 		Console::puts("Page not Present\n");
  	unsigned long address = read_cr2();
- 	unsigned long *PT;
+	unsigned long* dir_entry_address =(unsigned long*)( (0x3ff << 12) | ((address >> 22) << 12));
+ 	unsigned long* entry_address = (unsigned long*) ( (address >> 10 ) | ( 0x3ff << 22 ));
 
-//	check if the logical address legitimate
+// check if the logical address legitimate
 	bool found = false;
 // check every virtual memory pool for that
 	for ( int i = 0; i < current_page_table->c_vm; i++)
@@ -121,28 +123,33 @@ void PageTable::handle_fault(REGS * _r)
 		Console::putui(address);
 		Console::puts("\n.");
 		abort();
-		return;
 	}
+
 	//page table not present in page directory
-	if( ((current_page_table->page_directory[ address >> 22]) & 0x1 ) == 0 )
+	if( ((*dir_entry_address) & 0x1)  == 0 )
 	{
 		//allocate frame for page table
-		PT = (unsigned long *)(kernel_mem_pool->get_frame()<<12);
+		//set vitrual address allocated
+	//	current_page_table->vm_pool[0]
+		unsigned long frame_phy_address = process_mem_pool->get_frame()<<12;
+		*dir_entry_address = (unsigned long ) frame_phy_address | 3;
 		for(unsigned int  i = 0; i < ENTRIES_PER_PAGE; i++ )
-			PT[i] = 2;
-		current_page_table->page_directory[address>>22] = (unsigned long)PT | 3;
+		{
+			unsigned long* entries =(unsigned long*)( (0x3ff << 12) | ((frame_phy_address >> 22) << 12) | (i << 2));
+			*entries = 2;
+			if (i == ENTRIES_PER_PAGE -1)
+				*entries = (unsigned long) frame_phy_address | 3;
+		}
 	}
-	//page table presented in page directory
-	else
-		PT = (unsigned long *)(current_page_table->page_directory[address>>22]&0xFFFFF000);
-	
  	unsigned long frame = process_mem_pool->get_frame();
+	//set the page table entry content
+	*entry_address = (frame << 12 ) | 3;
+
 	if( frame == 0 )
 	{
 		Console::puts("Run out of Memory.");
 		abort();
 	}
-	PT[ (address>>12) & 0x3ff ] = (frame << 12) | 3;
 	return;
 }
 // register a virtual memory pool for this page table ( address space)
@@ -155,22 +162,19 @@ void PageTable::_register(VMPool* _pool)
 
 void  PageTable::free_page(unsigned long _page_no)
 {
-	unsigned long page_dir_index = _page_no >> 10;
-	unsigned long page_tb_index = _page_no & 0x3ff;
-	unsigned long* table = (unsigned long *)(page_directory[page_dir_index] & 0xfffff000);
-	unsigned long address = table[page_tb_index];
+	unsigned long* entry_address = (unsigned long *)( (0x3ff << 22) | (_page_no << 2) );
+	unsigned long phy_address = *entry_address;
 
-	unsigned long frame_no = address >> 12;
-
-	// clear the present bit
-	if ( address & 0x1)
+	unsigned long frame_no = phy_address >> 12;
+	if ( phy_address & 0x1)
 	{
-		Console::puts("\n release frame : ");
+		Console::puts("release frame : ");
 		Console::putui(frame_no);
 		Console::puts("\n");
 		FramePool::release_frame(frame_no);
 	}
-	table[page_tb_index] = table[page_tb_index] & ( ~(0x1));
+	// clear the present bit
+	*entry_address = (*entry_address) &  ~(0x1);
 	return;
 }
 
