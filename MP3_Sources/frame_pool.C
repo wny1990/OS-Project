@@ -65,17 +65,17 @@ unsigned long FramePool::get_frame()
 			for( offset = 0; offset < 8; offset++)
 				if ((  (~used[i]) & (0x1 << offset)) != 0 )
 					break;
-			if (offset == 8 )
-				return 0;
 			used[i] = used[i] | ( 0x1 << offset);
 			if ( (i << 3) + offset > nframes - 1)
-				return 0;
+				break;
 			Console::puts("\nget frame: ");
 			Console::putui(base_frame_no + (i << 3 )+ offset);
 			Console::puts("\n");
 			mark_inaccessible_frame( (i << 3) + offset);
 			return base_frame_no + (i << 3) + offset;
 		}
+	Console::puts("No frame avaluable, memory full:\n");
+	abort();
 	return 0;
 }
 

@@ -41,42 +41,51 @@ unsigned long VMPool::allocate(unsigned long _size)
     * memory pool. If successful, returns the virtual address of the
     * start of the allocated region of memory. If fails, returns 0. */
 {
-	unsigned long max = base_address;
-	unsigned long m_size = 0;
 	unsigned long start = base_address;
-	bool found_inner = false;
+	int found_index = 0;
 	// extend size to page size
-	_size = (_size & ~(0xfff) ) + 4096;
-	for ( int index = 2;  index < 2 * c_regions ; index = index + 2)
+	//if (_size % 4096 )
+	//	_size = (_size & ~(0xfff) ) + 4096;
+	while (_size % 4096 )
+		_size++;
+	//first fit algorithm, the list is always ascending ordered
+	if ( c_regions)
 	{
-		if (  regions[index] - ( regions[index-2] + regions[index-1]) >= _size )
+		for ( int index = -2;  index < 2 * c_regions ; index = index + 2)
 		{
-			start = regions[index-2] + regions[index-1];
-			found_inner = true;
-			break;
+			long right_addr;
+			if (index + 2 >= 2 * c_regions )
+				right_addr = base_address + size;
+			else
+				right_addr = regions[index+2];
+			long left_addr; 
+			if (index == -2 )
+				left_addr = base_address;
+			else
+				left_addr =  regions[index] + regions[index+1];
+
+			if (  (unsigned int)(right_addr - left_addr) >= _size )
+			{
+				start = left_addr;
+				found_index = index;
+				break;
+			}
 		}
 
+		for ( int i = 2*(c_regions -1); i >= found_index + 2; i = i - 2)
+		{
+			regions[i - 2] = regions[i];
+			regions[i - 3] = regions[i - 1];
+		}
 	}
-	if ( found_inner == false)
-	{
-		for ( int index = 0;  index < 2 * c_regions ; index = index + 2)
-			if (regions[index] > max)
-			{
-				max = regions[index];
-				m_size = regions[index + 1];
-			}
-
-	// we found no inner interval can allocated for this section
-		regions[c_regions * 2] = max + m_size;
-		regions[c_regions * 2 + 1] = _size;
-		start = max + m_size;
-	}
+	regions[found_index] = start;
+	regions[found_index + 1] = _size;
 	
 	Console::puts("\nallocate address start from: ");
 	Console::putui(start);
 	Console::puts("\n");
 	c_regions++;
-	return max + m_size;
+	return start;
 }   
 
 void VMPool::release(unsigned long _start_address)
@@ -84,6 +93,7 @@ void VMPool::release(unsigned long _start_address)
     * is identified by its start address, which was returned when the
     * region was allocated. */
 {
+
 	int index;
 	//find the index of the start address.
 	for ( index = 0;  index < 2 * c_regions ; index = index + 2)
@@ -95,10 +105,14 @@ void VMPool::release(unsigned long _start_address)
 		Console::puts("\nRegion to release not found: \n");
 		abort();
 	}
-	unsigned long region_size = regions[index + 1];
-	for ( unsigned long  i = 0; i <= (region_size >> 12 ); i++)
-		page_table->free_page( (_start_address >> 12 ) + i);
-
+	unsigned long address = _start_address;
+	for ( address  = _start_address; address < regions[index] + regions[index+1]; address += 4096)
+	{
+		Console::puts("\nrelease address start from: ");
+		Console::putui(address);
+		Console::puts("\n");
+		page_table->free_page(address >> 12);
+	}
 	// delete the info of this region
 	for ( int i = index; i < 2 * (c_regions - 1); i = i + 2)
 	{
