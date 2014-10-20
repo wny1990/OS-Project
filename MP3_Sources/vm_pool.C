@@ -128,8 +128,8 @@ BOOLEAN VMPool::is_legitimate(unsigned long _address)
     * if it is not part of a region that is currently allocated. */
 {
 	//if this is a recursive pointer, set the reference valid
-	if( _address >> 22 == 1023 || ((_address >> 12 ) & 0x3ff ) == 1023 )
-		return true;
+	//if( _address >> 22 == 1023 || ((_address >> 12 ) & 0x3ff ) == 1023 )
+	//	return true;
 	for ( int i = 0;  i < 2 * c_regions ; i = i + 2)
 	{
 		if( _address >= regions[i] && _address < regions[i] + regions[i+1])
