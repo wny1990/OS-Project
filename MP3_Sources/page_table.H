@@ -42,13 +42,10 @@
 
 class PageTable 
 {
-public:
-//private:
+private:
   /* THESE MEMBERS ARE COMMON TO ENTIRE PAGING SUBSYSTEM */
   static PageTable     * current_page_table; /* pointer to currently loaded page table object */
   static unsigned int    paging_enabled;     /* is paging turned on (i.e. are addresses logical)? */
-  static FramePool     * kernel_mem_pool;    /* Frame pool for the kernel memory */
-  static FramePool     * process_mem_pool;   /* Frame pool for the process memory */
   static unsigned long   shared_size;        /* size of shared address space */
 
   /* DATA FOR CURRENT PAGE TABLE */
@@ -62,6 +59,8 @@ public:
   static const unsigned int ENTRIES_PER_PAGE = Machine::PT_ENTRIES_PER_PAGE; /* in entries, duh! */
 
 public:
+  static FramePool     * kernel_mem_pool;    /* Frame pool for the kernel memory */
+  static FramePool     * process_mem_pool;   /* Frame pool for the process memory */
   static void init_paging(FramePool * _kernel_mem_pool,
                           FramePool * _process_mem_pool,
                           const unsigned long _shared_size);

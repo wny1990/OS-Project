@@ -106,6 +106,7 @@ void VMPool::release(unsigned long _start_address)
 		abort();
 	}
 	unsigned long address = _start_address;
+	//scan the regions array
 	for ( address  = _start_address; address < regions[index] + regions[index+1]; address += 4096)
 	{
 		Console::puts("\nrelease address start from: ");
@@ -127,9 +128,7 @@ BOOLEAN VMPool::is_legitimate(unsigned long _address)
    /* Returns FALSE if the address is not valid. An address is not valid
     * if it is not part of a region that is currently allocated. */
 {
-	//if this is a recursive pointer, set the reference valid
-	//if( _address >> 22 == 1023 || ((_address >> 12 ) & 0x3ff ) == 1023 )
-	//	return true;
+	//scan the regions array.
 	for ( int i = 0;  i < 2 * c_regions ; i = i + 2)
 	{
 		if( _address >= regions[i] && _address < regions[i] + regions[i+1])

@@ -57,9 +57,13 @@
 #include "mem_pool.H"
 
 #include "thread.H"          /* THREAD MANAGEMENT */
+//added for user scheduelr
+#define _USES_SCHEDULER_
+#define _TERMINATING_FUNCTIONS_
+
 
 #ifdef _USES_SCHEDULER_
-#include "Scheduler.H"
+#include "scheduler.H"
 #endif
 
 /*--------------------------------------------------------------------------*/
