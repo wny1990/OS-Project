@@ -29,10 +29,14 @@
       the CPU, and calls the dispatcher function defined in 'threads.h' to
       do the context switch. */
     {
+        if ( ! Machine::interrupts_enabled())
+            Machine::disable_interrupts();
         Thread* target = queue.dequeue();
-        Console::puts("q_len:");
+     /*
+	Console::puts("q_len:");
         Console::puti(queue.get_size());
         Console::puts("\n");
+      */
         Thread::dispatch_to(target);
         return;
     }
@@ -42,6 +46,8 @@
       for threads that were waiting for an event to happen, or that have 
       to give up the CPU in response to a preemption. */
     {
+        if ( ! Machine::interrupts_enabled())
+            Machine::disable_interrupts();
         queue.enqueue(_thread);
         return;
     }
@@ -60,6 +66,8 @@
     /* Remove the given thread from the scheduler in preparation for destruction
       of the thread. */
     {
+        if ( ! Machine::interrupts_enabled())
+            Machine::disable_interrupts();
         queue.remove(_thread);
         return;
     }

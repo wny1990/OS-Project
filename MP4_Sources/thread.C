@@ -77,6 +77,8 @@ static void thread_shutdown() {
        It terminates the thread by releasing memory and any other resources held by the thread. 
        This is a bit complicated because the thread termination interacts with the scheduler.
      */
+    if ( ! Machine::interrupts_enabled())
+        Machine::disable_interrupts();
     SYSTEM_SCHEDULER->resume(current_thread);
     /* Delete the thread from the current ready queue */ 
     SYSTEM_SCHEDULER->terminate(current_thread);

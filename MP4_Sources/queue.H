@@ -5,7 +5,7 @@ class node {
 public:
         node()
 	{
-		val = 0;
+		val = NULL;
 		next = NULL;
 	}
 	node( T element)
@@ -38,7 +38,7 @@ Queue<T>::Queue()
 {
 	size = 0;
 	/* dummy head */
-	head = new node<T>(0);
+	head = new node<T>(NULL);
 	tail = head;
 }
 
@@ -73,7 +73,10 @@ T Queue<T>::dequeue()
         if (size == 0)
 		abort();
 	T element = head->next->val;
+	node<T> *temp = head;
 	head = head->next;
+	// release the old head pointer
+	delete temp;
 	size--;
 	return element;
 }
