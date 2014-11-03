@@ -63,6 +63,12 @@ void SimpleTimer::handle_interrupt(REGS *_r) {
     {
         seconds++;
         ticks = 0;
+        /*  if (generated_by_slave_PIC(int_no))
+		outportb(0xA0, 0x20);*/
+
+        /* Send an EOI message to the master interrupt controller. */
+        outportb(0x20, 0x20);
+   
         //Console::puts("One second has passed\n");
         Console::puts("\n~~~~~~~~~~~~~~~~~~~~~Time to switch thread~~~~~~~~~~~~~~~~~~~~~~\n");
     	SYSTEM_SCHEDULER->resume(Thread::CurrentThread());
