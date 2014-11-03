@@ -118,19 +118,6 @@ void InterruptHandler::dispatch_interrupt(REGS * _r) {
         
   InterruptHandler * handler = handler_table[int_no];
 
-  if (!handler) {
-    /* --- NO DEFAULT HANDLER HAS BEEN REGISTERED. SIMPLY RETURN AN ERROR. */
-    Console::puts("INTERRUPT NO: ");
-    Console::puti(int_no);
-    Console::puts("\n");
-    Console::puts("NO DEFAULT INTERRUPT HANDLER REGISTERED\n");
-//    abort();
-  }
-  else {
-    /* -- HANDLE THE INTERRUPT */
-    handler->handle_interrupt(_r);
-  }
-
   /* This is an interrupt that was raised by the interrupt controller. We need 
        to send and end-of-interrupt (EOI) signal to the controller after the 
        interrupt has been handled. */
@@ -144,6 +131,21 @@ void InterruptHandler::dispatch_interrupt(REGS * _r) {
 
   /* Send an EOI message to the master interrupt controller. */
   outportb(0x20, 0x20);
+
+  if (!handler) {
+    /* --- NO DEFAULT HANDLER HAS BEEN REGISTERED. SIMPLY RETURN AN ERROR. */
+    Console::puts("INTERRUPT NO: ");
+    Console::puti(int_no);
+    Console::puts("\n");
+    Console::puts("NO DEFAULT INTERRUPT HANDLER REGISTERED\n");
+//    abort();
+  }
+  else {
+    /* -- HANDLE THE INTERRUPT */
+    handler->handle_interrupt(_r);
+  }
+
+
     
 }
 

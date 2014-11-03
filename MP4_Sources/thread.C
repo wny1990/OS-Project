@@ -1,7 +1,8 @@
 /* 
     File: thread.C
 
-    Author: R. Bettati
+    Author: Ningyuan Wang
+		Based on : R. Bettati
             Department of Computer Science
             Texas A&M University
     Date  : 11/10/25
@@ -77,7 +78,7 @@ static void thread_shutdown() {
        It terminates the thread by releasing memory and any other resources held by the thread. 
        This is a bit complicated because the thread termination interacts with the scheduler.
      */
-    if ( ! Machine::interrupts_enabled())
+    if (  Machine::interrupts_enabled())
         Machine::disable_interrupts();
     SYSTEM_SCHEDULER->resume(current_thread);
     /* Delete the thread from the current ready queue */ 
@@ -93,6 +94,7 @@ static void thread_shutdown() {
 
 static void thread_start() {
      /* This function is used to release the thread for execution in the ready queue. */
+    if ( ! Machine::interrupts_enabled())
      Machine::enable_interrupts();
      /* We need to add code, but it is probably nothing more than enabling interrupts. */
 }

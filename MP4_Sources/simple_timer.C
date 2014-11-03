@@ -24,6 +24,8 @@
 #include "interrupts.H"
 #include "simple_timer.H"
 
+#include "scheduler.H"
+extern Scheduler* SYSTEM_SCHEDULER; 
 /*--------------------------------------------------------------------------*/
 /* CONSTRUCTOR */
 /*--------------------------------------------------------------------------*/
@@ -61,7 +63,10 @@ void SimpleTimer::handle_interrupt(REGS *_r) {
     {
         seconds++;
         ticks = 0;
-        Console::puts("One second has passed\n");
+        //Console::puts("One second has passed\n");
+        Console::puts("\n~~~~~~~~~~~~~~~~~~~~~Time to switch thread~~~~~~~~~~~~~~~~~~~~~~\n");
+    	SYSTEM_SCHEDULER->resume(Thread::CurrentThread());
+	SYSTEM_SCHEDULER->yield();
     }
 }
 

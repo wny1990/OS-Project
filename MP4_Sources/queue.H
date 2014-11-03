@@ -1,3 +1,14 @@
+/* 
+    File: queue.H
+
+    Author: Ningyuan Wang
+            Department of Electrical & Computer Engineering
+            Texas A&M University
+    Date  : 11/02/2014
+
+*/
+
+
 #include "utils.H"
 
 template<typename T>

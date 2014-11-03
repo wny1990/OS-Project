@@ -92,7 +92,7 @@ Scheduler * SYSTEM_SCHEDULER;
 /*--------------------------------------------------------------------------*/
 
 void pass_on_CPU(Thread * _to_thread) {
-
+	return;
 #ifndef _USES_SCHEDULER_
 
         /* We don't use a scheduler. Explicitely pass control to the next
