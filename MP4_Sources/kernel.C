@@ -166,6 +166,8 @@ void fun3() {
         Console::puts("FUN 3 IN BURST["); Console::puti(j); Console::puts("]\n");
         for (int i = 0; i < 10; i++) {
 	    Console::puts("FUN 3: TICK ["); Console::puti(i); Console::puts("]\n");
+ //           if( Machine::interrupts_enabled())
+ //              Console::puts("inter enable");
         }
         pass_on_CPU(thread4);
     }

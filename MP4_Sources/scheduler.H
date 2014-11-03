@@ -22,6 +22,7 @@
 #include "machine.H"
 #include "thread.H"
 #include "console.H"
+#include "queue.H"
 
 /*--------------------------------------------------------------------------*/
 /* SCHEDULER */
@@ -31,8 +32,7 @@ class Scheduler {
 
    /* The scheduler may need private members... */
 private:
-   Thread* queue[256];
-   int q_len;
+   Queue<Thread*> queue;
 
 public:
 

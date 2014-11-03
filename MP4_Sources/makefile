@@ -65,15 +65,15 @@ threads_low.o: threads_low.asm threads_low.H
 thread.o: thread.C thread.H threads_low.H
 	$(CPP) $(CPP_OPTIONS) -c -o thread.o thread.C
 
-scheduler.o: scheduler.C scheduler.H
+scheduler.o: scheduler.C scheduler.H queue.H
 	$(CPP) $(CPP_OPTIONS) -c -o scheduler.o scheduler.C
 
 # ==== KERNEL MAIN FILE =====
-kernel.o: kernel.C console.H gdt.H irq.H exceptions.H interrupts.H simple_timer.H frame_pool.H mem_pool.H
+kernel.o: kernel.C console.H gdt.H irq.H exceptions.H interrupts.H simple_timer.H frame_pool.H mem_pool.H 
 	$(CPP) $(CPP_OPTIONS) -c -o kernel.o kernel.C
 
 kernel.bin: start.o utils.o kernel.o assert.o console.o gdt.o idt.o irq.o machine.o machine_low.o exceptions.o interrupts.o \
-   simple_timer.o frame_pool.o mem_pool.o threads_low.o thread.o scheduler.o
+   simple_timer.o frame_pool.o mem_pool.o threads_low.o thread.o scheduler.o 
 	ld -m elf_i386 -T linker.ld -o kernel.bin start.o utils.o kernel.o assert.o console.o gdt.o idt.o \
    exceptions.o irq.o machine.o machine_low.o interrupts.o simple_timer.o frame_pool.o mem_pool.o threads_low.o thread.o scheduler.o
 	

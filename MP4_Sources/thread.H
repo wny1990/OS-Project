@@ -72,6 +72,7 @@ public:
        NOTE: _stack points to the beginning of the stack area, i.e., to the bottom of the stack.
     */
 
+    unsigned long get_stack_address();
     int ThreadId();
     /* Returns the thread id of the thread. */
 

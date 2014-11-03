@@ -20,7 +20,7 @@
       If the scheduler implements some sort of round-robin scheme, then the 
       end_of_quantum handler is installed here as well. */
     {
-        q_len = 0;
+        queue = Queue<Thread*>();
         return;
     }
     void Scheduler::yield()
@@ -29,12 +29,9 @@
       the CPU, and calls the dispatcher function defined in 'threads.h' to
       do the context switch. */
     {
-        Thread* target = queue[0];
-        for( int i = 0; i < q_len - 1; i++ )
-            queue[i] = queue[i + 1];
-        q_len--;
+        Thread* target = queue.dequeue();
         Console::puts("q_len:");
-        Console::puti(q_len);
+        Console::puti(queue.get_size());
         Console::puts("\n");
         Thread::dispatch_to(target);
         return;
@@ -45,8 +42,7 @@
       for threads that were waiting for an event to happen, or that have 
       to give up the CPU in response to a preemption. */
     {
-        queue[q_len] = _thread;
-        q_len++;
+        queue.enqueue(_thread);
         return;
     }
 
@@ -56,8 +52,7 @@
       implementation, this may not entail more than simply adding the 
       thread to the ready queue (see scheduler_resume). */
     {
-        queue[q_len] = _thread;
-        q_len++;
+        queue.enqueue(_thread);
         return;
     }
 
@@ -65,13 +60,7 @@
     /* Remove the given thread from the scheduler in preparation for destruction
       of the thread. */
     {
-        int target_index = 0;
-        for( int i = 0; i < q_len; i++ )
-            if ( queue[i] == _thread)
-                target_index = i;
-        for( int i = target_index; i < q_len - 1; i++ )
-            queue[i] = queue[i+1];
-        q_len--;
+        queue.remove(_thread);
         return;
     }
 

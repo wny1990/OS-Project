@@ -39,6 +39,7 @@
 #include "threads_low.H"
 
 #include "scheduler.H"
+#include "mem_pool.H"
 /*--------------------------------------------------------------------------*/
 /* EXTERNS */
 /*--------------------------------------------------------------------------*/
@@ -48,6 +49,7 @@ Thread * current_thread = 0;
    for example. */
 
 extern Scheduler* SYSTEM_SCHEDULER;
+extern MemPool* MEMORY_POOL;
 /* -------------------------------------------------------------------------*/
 /* LOCAL DATA PRIVATE TO THREAD AND DISPATCHER CODE */
 /* -------------------------------------------------------------------------*/
@@ -79,14 +81,17 @@ static void thread_shutdown() {
     /* Delete the thread from the current ready queue */ 
     SYSTEM_SCHEDULER->terminate(current_thread);
     /* releasing the memory */
-    //current_thread = 0;
+    MEMORY_POOL->release((unsigned long)(current_thread->get_stack_address()));
+    MEMORY_POOL->release((unsigned long)current_thread);
+    /* there is no need to store the context now */
+    current_thread = 0;
     /* yield to another thread */
     SYSTEM_SCHEDULER->yield();
 }
 
 static void thread_start() {
      /* This function is used to release the thread for execution in the ready queue. */
-    
+     Machine::enable_interrupts();
      /* We need to add code, but it is probably nothing more than enabling interrupts. */
 }
 
@@ -213,4 +218,9 @@ void Thread::dispatch_to(Thread * _thread) {
 Thread * Thread::CurrentThread() {
 /* Return the currently running thread. */
     return current_thread;
+}
+
+
+unsigned long Thread::get_stack_address(){
+    return (unsigned long)stack;
 }
