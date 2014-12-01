@@ -58,8 +58,8 @@ void SimpleTimer::handle_interrupt(REGS *_r) {
     /* Increment our "ticks" count */
     ticks++;
 
-    /* Whenever a second is over, we update counter accordingly. */
-    if (ticks >= hz )
+    /* Whenever 50 ms is over, we update counter accordingly. */
+    if (ticks >= (hz/20) )
     {
         seconds++;
         ticks = 0;

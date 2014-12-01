@@ -20,7 +20,7 @@
 
 /* -- COMMENT/UNCOMMENT THE FOLLOWING LINE TO EXCLUDE/INCLUDE SCHEDULER CODE */
 
-//#define _USES_SCHEDULER_
+#define _USES_SCHEDULER_
 /* This macro is defined when we want to force the code below to use 
    a scheduler.
    Otherwise, no scheduler is used, and the threads pass control to each 
@@ -65,6 +65,7 @@
 
 #ifdef _USES_DISK_
 #include "simple_disk.H"
+#include "blocking_disk.H"
 #endif
 
 #ifdef _USES_FILESYSTEM_
@@ -99,7 +100,8 @@ Scheduler * SYSTEM_SCHEDULER;
 #ifdef _USES_DISK_
 
 /* -- A POINTER TO THE SYSTEM DISK */
-SimpleDisk * SYSTEM_DISK;
+//SimpleDisk * SYSTEM_DISK;
+BlockingDisk * SYSTEM_DISK;
 
 #define SYSTEM_DISK_SIZE 10485760
 
@@ -377,7 +379,8 @@ int main() {
 
     /* -- DISK DEVICE -- IF YOU HAVE ONE -- */
 
-    SimpleDisk system_disk = SimpleDisk(MASTER, SYSTEM_DISK_SIZE);
+//    SimpleDisk system_disk = SimpleDisk(MASTER, SYSTEM_DISK_SIZE);
+    BlockingDisk system_disk = BlockingDisk(MASTER, SYSTEM_DISK_SIZE);
     SYSTEM_DISK = &system_disk;
 
 #endif

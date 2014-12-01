@@ -1,14 +1,10 @@
-CPP = gpp
-CPP_OPTIONS = -nostartfiles -nostdlib -fno-rtti -fno-exceptions  
-
-C           = gcc
-C_OPTIONS   = -Wall -O -fstrength-reduce -fomit-frame-pointer -finline-functions -nostdinc -fno-builtin 
+CPP = gcc
+CPP_OPTIONS = -Wall -nostdlib -fno-builtin -nostartfiles -nodefaultlibs -fno-exceptions -fno-rtti -fno-stack-protector -fleading-underscore -fno-asynchronous-unwind-tables -m32
 
 all: kernel.bin
 
 clean:
-	del *.o
-
+	rm -f *.o
 
 start.o: start.asm gdt_low.asm idt_low.asm irq_low.asm
 	nasm -f aout -o start.o start.asm
@@ -53,6 +49,9 @@ simple_timer.o: simple_timer.C simple_timer.H
 simple_disk.o: simple_disk.C simple_disk.H
 	$(CPP) $(CPP_OPTIONS) -c -o simple_disk.o simple_disk.C
 
+blocking_disk.o: blocking_disk.C blocking_disk.H queue.H
+	$(CPP) $(CPP_OPTIONS) -c -o blocking_disk.o blocking_disk.C
+
 # ==== MEMORY =====
 
 
@@ -67,8 +66,11 @@ mem_pool.o: mem_pool.C mem_pool.H
 threads_low.o: threads_low.asm threads_low.H
 	nasm -f aout -o threads_low.o threads_low.asm
 
-thread.o: thread.C thread.H threads_low.H
-	$(CPP) $(CPP_OPTIONS) -c -o thread.o thread.C
+threads.o: thread.C thread.H threads_low.H
+	$(CPP) $(CPP_OPTIONS) -c -o threads.o thread.C
+
+scheduler.o: scheduler.C scheduler.H queue.H
+	$(CPP) $(CPP_OPTIONS) -c -o scheduler.o scheduler.C
 
 # ==== MAIN =====
 
@@ -76,7 +78,9 @@ kernel.o: kernel.C console.H simple_timer.H
 	$(CPP) $(CPP_OPTIONS) -c -o kernel.o kernel.C
 
 kernel.bin: start.o utils.o kernel.o assert.o console.o gdt.o idt.o irq.o machine.o exceptions.o interrupts.o \
-   simple_timer.o simple_disk.o frame_pool.o mem_pool.o threads_low.o thread.o
-	ld -T linker.ld -o kernel.bin start.o utils.o kernel.o assert.o console.o gdt.o idt.o \
-   exceptions.o irq.o machine.o interrupts.o simple_timer.o simple_disk.o frame_pool.o mem_pool.o threads_low.o thread.o
+   simple_timer.o simple_disk.o frame_pool.o threads_low.o threads.o mem_pool.o blocking_disk.o scheduler.o
+	ld -m elf_i386 -T linker.ld -o kernel.bin start.o utils.o kernel.o assert.o console.o gdt.o idt.o \
+   exceptions.o irq.o machine.o interrupts.o simple_timer.o simple_disk.o frame_pool.o threads_low.o threads.o mem_pool.o \
+   blocking_disk.o scheduler.o
+
 	

@@ -100,6 +100,8 @@ static void thread_start() {
 }
 
 void Thread::setup_context(Thread_Function _tfunction){
+    if (  Machine::interrupts_enabled())
+        Machine::disable_interrupts();
     /* Sets up the initial context for the given kernel-only thread. 
        The thread is supposed the call the function _tfunction upon start.
     */

@@ -65,7 +65,7 @@ threads_low.o: threads_low.asm threads_low.H
 thread.o: thread.C thread.H threads_low.H
 	$(CPP) $(CPP_OPTIONS) -c -o thread.o thread.C
 
-scheduler.o: scheduler.C scheduler.H queue.H
+scheduler.o: scheduler.C scheduler.H
 	$(CPP) $(CPP_OPTIONS) -c -o scheduler.o scheduler.C
 
 # ==== KERNEL MAIN FILE =====

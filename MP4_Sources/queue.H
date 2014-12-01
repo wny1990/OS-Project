@@ -53,7 +53,7 @@ Queue<T>::Queue()
 	tail = head;
 }
 
-
+/* get the size of the queue */
 template<typename T>
 int Queue<T>::get_size()
 {
@@ -68,6 +68,7 @@ bool Queue<T>::isEmpty()
 	return true;
 }
 
+/* insert a node in the tail of the queue */
 template<typename T>
 void Queue<T>::enqueue(T element)
 {
@@ -78,6 +79,7 @@ void Queue<T>::enqueue(T element)
 	return;
 }
 
+/* pop a node in the front of the queue */
 template<typename T>
 T Queue<T>::dequeue()
 {
