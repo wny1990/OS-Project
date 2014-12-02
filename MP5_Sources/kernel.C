@@ -100,8 +100,8 @@ Scheduler * SYSTEM_SCHEDULER;
 #ifdef _USES_DISK_
 
 /* -- A POINTER TO THE SYSTEM DISK */
-//SimpleDisk * SYSTEM_DISK;
-BlockingDisk * SYSTEM_DISK;
+SimpleDisk * SYSTEM_DISK;
+//BlockingDisk * SYSTEM_DISK;
 
 #define SYSTEM_DISK_SIZE 10485760
 

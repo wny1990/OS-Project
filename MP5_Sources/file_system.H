@@ -26,6 +26,7 @@
 
 #include "utils.H"
 #include "simple_disk.H"
+#include "blocking_disk.H"
 
 /*--------------------------------------------------------------------------*/
 /* DATA STRUCTURES */ 
@@ -50,6 +51,8 @@ private:
      FileSystem   * file_system;
 
      unsigned int   file_id;
+
+     unsigned int   location;
 
      /* -- You may want to store other information, such as 
              .. position in the file
